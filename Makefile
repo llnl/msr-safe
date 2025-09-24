@@ -11,6 +11,7 @@
 #CFLAGS_msr_entry.o := -DDEBUG
 #CFLAGS_msr_batch.o := -DDEBUG
 #CFLAGS_msr-smp.o := -DDEBUG
+#CFLAGS_msr_version.o := -DDEBUG
 
 KERNELVER ?= $(shell uname -r)
 
