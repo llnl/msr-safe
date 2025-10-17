@@ -84,8 +84,18 @@ static int open_allowlist(struct inode *inode, struct file *file)
  * The first pass is to ensure that the input file is valid. If the file is
  * valid, we will then delete the current white list and then perform the
  * second pass to actually create the new white list.
+ *
+ * gcc v8 (ish?) introduced the "cold" attribute.  Linux kernel versions
+ * prior to v5 (ish?) have an objtool that erroneously detects fallthroughs
+ * between write_allowlist() and write_allowlist.cold() (and vice versa).
+ * To get rid of that warning, add the "cold" attribute to the entire function
+ * when working with older kernels.
  */
+#if defined __has_attribute && __has_attribute(cold) && LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
+__attribute__((cold)) static ssize_t write_allowlist(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+#else
 static ssize_t write_allowlist(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+#endif
 {
     int err = 0;
     const u32 __user *tmp = (const u32 __user *)buf;
