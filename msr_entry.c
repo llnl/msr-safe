@@ -45,6 +45,21 @@
 #include "msr_allowlist.h"
 #include "msr_version.h"
 
+
+#if __GNUC__ >= 9 && LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
+#undef module_init
+#define module_init(initfn) \
+    static inline initcall_t __maybe_unused __inittest(void) \
+    { return initfn; } \
+    int init_module(void) __attribute__((__copy__(initfn))) __attribute__((alias(#initfn)));
+#undef module_exit
+#define module_exit(exitfn) \
+    static inline exitcall_t __maybe_unused __exittest(void) \
+    { return exitfn; } \
+    void cleanup_module(void) __attribute__((__copy__(exitfn))) __attribute__((alias(#exitfn)));
+#endif
+
+
 static struct class *msr_class;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)
 static enum cpuhp_state cpuhp_msr_state;
